@@ -1,0 +1,1016 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1/health": {
+      "get": {
+        "description": "**이 API는 공통 Response를 적용받지 않습니다.**\n서버와 주요 의존성이 정상 작동 중인지 확인합니다.",
+        "operationId": "HealthController_checkHealth",
+        "parameters": [
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "서버가 정상일 경우 true 반환",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Health Check",
+        "tags": [
+          "Health"
+        ],
+        "security": []
+      }
+    },
+    "/v1/health/ping": {
+      "get": {
+        "description": "**이 API는 공통 Response를 적용받지 않습니다.**\n서버 응답 속도를 확인하기 위한 ping 요청입니다.",
+        "operationId": "HealthController_ping",
+        "parameters": [
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "서버가 정상일 경우 \"pong\" 반환",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Ping",
+        "tags": [
+          "Health"
+        ],
+        "security": []
+      }
+    },
+    "/v1/auth/oauth/callback": {
+      "post": {
+        "description": "Logto SDK로 소셜 로그인(Kakao / Naver / Apple / Google) 또는 이메일 OTP 인증을 완료한 뒤, SDK가 발급한 access token을 본 endpoint에 전달해 서비스의 인증 토큰을 발급받습니다.\nLogto SDK에서 받은 `logtoAccessToken`를 요청 본문으로 보냅니다.\n만약 신규 사용자의 경우 자동으로 회원가입 처리 후 동일한 응답 형식으로 토큰(내부 Access JWT, Refresh JWT)이 발급됩니다.\n발급받은 Access JWT는 이후 인증이 필요한 모든 API 호출 시 `Authorization: Bearer <token>` 헤더에 포함해주세요.\nAccess JWT 만료 시 `POST /v1/auth/refresh`로 갱신할 수 있습니다.",
+        "operationId": "AuthController_handleOauthCallback",
+        "parameters": [
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OauthCallbackReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AuthTokenRes"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "OAuth 인증 실패 / OAuth 사용자 정보 조회 실패",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "OAuth 인증 실패",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "OAUTH_AUTHENTICATION_FAILED",
+                        "message": "OAuth 인증 실패",
+                        "data": null
+                      }
+                    }
+                  },
+                  "example2": {
+                    "summary": "OAuth 사용자 정보 조회 실패",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "OAUTH_USER_INFO_FETCH_FAILED",
+                        "message": "OAuth 사용자 정보 조회 실패",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/ApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "이미 사용중인 이메일",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "이미 사용중인 이메일",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "DUPLICATE_EMAIL",
+                        "message": "이미 사용중인 이메일",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/ApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "summary": "OAuth 로그인 (Sign In / Sign Up)",
+        "tags": [
+          "Auth"
+        ],
+        "security": []
+      }
+    },
+    "/v1/auth/refresh": {
+      "post": {
+        "description": "저장해둔 Refresh JWT로 만료된 Access JWT를 재발급받습니다.\n요청 본문에 기존 Refresh JWT를 전달합니다.\n매 호출마다 새 Access JWT와 Refresh JWT가 함께 발급되며, 응답으로 받은 새 Refresh JWT로 기존 값을 갱신해주세요.\n직전에 사용한 Refresh JWT는 사용 불가 처리되므로 동일한 토큰으로 두 번 호출할 수 없습니다.",
+        "operationId": "AuthController_refreshToken",
+        "parameters": [
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AuthTokenRes"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "유효하지 않는 토큰 / 만료된 토큰 / 존재하지 않는 유저 토큰",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "유효하지 않는 토큰",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "INVALID_JWT_REFRESH_TOKEN",
+                        "message": "유효하지 않는 토큰",
+                        "data": null
+                      }
+                    }
+                  },
+                  "example2": {
+                    "summary": "만료된 토큰",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "EXPIRED_JWT_REFRESH_TOKEN",
+                        "message": "만료된 토큰",
+                        "data": null
+                      }
+                    }
+                  },
+                  "example3": {
+                    "summary": "존재하지 않는 유저 토큰",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "USER_TOKEN_NOT_FOUND",
+                        "message": "존재하지 않는 유저 토큰",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/ApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "summary": "Access JWT 재발급 (Refresh)",
+        "tags": [
+          "Auth"
+        ],
+        "security": []
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "description": "현재 디바이스의 Refresh JWT를 무효화하여 토큰 갱신을 차단합니다.\n요청 본문에 무효화할 Refresh JWT를 전달합니다.\n다른 기기에서 로그인한 세션은 영향을 받지 않습니다 (디바이스별 독립).\n호출 후 클라이언트는 저장해둔 Access JWT와 Refresh JWT를 모두 제거해주세요.",
+        "operationId": "AuthController_logout",
+        "parameters": [
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogoutReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인이 되어있지 않음 / 유효하지 않는 토큰 / 만료된 토큰",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "로그인이 되어있지 않음",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "NOT_LOGGED_IN",
+                        "message": "로그인이 되어있지 않음",
+                        "data": null
+                      }
+                    }
+                  },
+                  "example2": {
+                    "summary": "유효하지 않는 토큰",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "INVALID_JWT_ACCESS_TOKEN",
+                        "message": "유효하지 않는 토큰",
+                        "data": null
+                      }
+                    }
+                  },
+                  "example3": {
+                    "summary": "만료된 토큰",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "EXPIRED_JWT_ACCESS_TOKEN",
+                        "message": "만료된 토큰",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/ApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "로그아웃",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/v1/users/me": {
+      "get": {
+        "description": "현재 로그인된 유저(나)의 기본 정보를 가져온다. 로그인 안 된 상태면 data는 null로 응답.",
+        "operationId": "UserController_getMe",
+        "parameters": [
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/GetMeRes"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "유효하지 않는 토큰 / 만료된 토큰",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "유효하지 않는 토큰",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "INVALID_JWT_ACCESS_TOKEN",
+                        "message": "유효하지 않는 토큰",
+                        "data": null
+                      }
+                    }
+                  },
+                  "example2": {
+                    "summary": "만료된 토큰",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "EXPIRED_JWT_ACCESS_TOKEN",
+                        "message": "만료된 토큰",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/ApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "존재하지 않는 유저",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "존재하지 않는 유저",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "USER_NOT_FOUND",
+                        "message": "존재하지 않는 유저",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/ApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "Get Me",
+        "tags": [
+          "User"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Nx Nest Starter Core API",
+    "description": "",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "Access JWT": {
+        "scheme": "bearer",
+        "name": "Access JWT",
+        "type": "http",
+        "in": "header",
+        "description": "Access JWT for user authentication",
+        "x-apidog": {
+          "authType": "bearer",
+          "addTokenTo": "header",
+          "headerPrefix": "Bearer",
+          "token": "{{bearerToken}}"
+        }
+      }
+    },
+    "schemas": {
+      "ApiError": {
+        "type": "object",
+        "properties": {}
+      },
+      "ApiErrorMessage": {
+        "type": "object",
+        "properties": {
+          "traceId": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "traceId",
+          "code",
+          "message"
+        ]
+      },
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string",
+            "enum": [
+              "SUCCESS",
+              "ERROR"
+            ]
+          },
+          "data": {
+            "type": "object"
+          },
+          "error": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApiErrorMessage"
+              }
+            ]
+          }
+        },
+        "required": [
+          "result",
+          "data",
+          "error"
+        ]
+      },
+      "AuthTokenRes": {
+        "type": "object",
+        "properties": {
+          "tokenType": {
+            "type": "string",
+            "enum": [
+              "Bearer"
+            ],
+            "description": "OAuth 2.0 token type — 항상 \"Bearer\". Authorization 헤더는 `Bearer <accessToken>` 형식으로 전송."
+          },
+          "accessToken": {
+            "type": "string",
+            "description": "JWT access token"
+          },
+          "accessTokenExpiresIn": {
+            "type": "integer",
+            "description": "access token 만료까지 남은 초"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "JWT refresh token"
+          },
+          "refreshTokenExpiresIn": {
+            "type": "integer",
+            "description": "refresh token 만료까지 남은 초"
+          },
+          "userId": {
+            "type": "integer",
+            "description": "로그인된 유저 ID"
+          },
+          "userEmail": {
+            "type": "string",
+            "description": "유저 이메일"
+          },
+          "userFullname": {
+            "type": "string",
+            "description": "유저 이름"
+          },
+          "userAvatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "유저 아바타 URL"
+          }
+        },
+        "required": [
+          "tokenType",
+          "accessToken",
+          "accessTokenExpiresIn",
+          "refreshToken",
+          "refreshTokenExpiresIn",
+          "userId",
+          "userEmail",
+          "userFullname",
+          "userAvatarUrl"
+        ]
+      },
+      "OauthCallbackDeviceReq": {
+        "type": "object",
+        "properties": {
+          "deviceType": {
+            "type": "string",
+            "enum": [
+              "WEB_BROWSER",
+              "IOS_APP",
+              "ANDROID_APP"
+            ],
+            "description": "디바이스 타입"
+          },
+          "pushToken": {
+            "type": "string",
+            "minLength": 1,
+            "description": "FCM registration token (FE 의 firebase messaging SDK 가 발급)"
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en-US",
+              "ko",
+              "fr",
+              "es",
+              "de",
+              "ja",
+              "ms"
+            ],
+            "description": "이 디바이스의 언어 (push 알림 언어로 사용). user.defaultLanguage 와 별개."
+          }
+        },
+        "required": [
+          "deviceType",
+          "pushToken",
+          "language"
+        ]
+      },
+      "OauthCallbackReq": {
+        "type": "object",
+        "properties": {
+          "logtoAccessToken": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Logto SDK가 발급한 access token (FE의 SDK.getAccessToken() 결과)"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "KAKAO",
+              "NAVER",
+              "APPLE",
+              "GOOGLE",
+              "EMAIL"
+            ],
+            "description": "로그인 수단 (FE에서 사용자가 선택한 버튼)"
+          },
+          "device": {
+            "description": "FCM 등록 정보. push 권한을 받아 token 을 보낼 수 있는 클라이언트만 채우면 됨. 미전송 시 device 등록 skip (push 알림 발송 대상에서 제외).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OauthCallbackDeviceReq"
+              }
+            ]
+          }
+        },
+        "required": [
+          "logtoAccessToken",
+          "provider"
+        ]
+      },
+      "RefreshTokenReq": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "minLength": 1,
+            "description": "발급받은 refresh token"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "LogoutReq": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "minLength": 1,
+            "description": "로그아웃할 디바이스의 refresh token. 해당 row만 무효화되어 다른 기기 세션은 유지됨."
+          },
+          "pushToken": {
+            "type": "string",
+            "description": "이 디바이스의 FCM push token. 보내면 해당 device 등록을 함께 삭제 (push 비활성). 미전송 시 device 는 그대로 유지."
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "GetMeRes": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "유저 ID"
+          },
+          "email": {
+            "type": "string",
+            "description": "이메일"
+          },
+          "firstname": {
+            "type": "string",
+            "nullable": true,
+            "description": "이름"
+          },
+          "lastname": {
+            "type": "string",
+            "nullable": true,
+            "description": "성"
+          },
+          "fullname": {
+            "type": "string",
+            "description": "firstname + lastname (둘 다 없으면 빈 문자열)"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "아바타 이미지 URL"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED",
+              "WITHDRAWN",
+              "DELETED"
+            ],
+            "description": "계정 상태"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "가입 일시"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "firstname",
+          "lastname",
+          "fullname",
+          "avatarUrl",
+          "status",
+          "createdAt"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../dist/apps/admin-api",
+    "tsBuildInfoFile": "../../dist/apps/admin-api/tsconfig.app.tsbuildinfo",
+    "types": ["node"],
+    "noEmit": true,
+    "emitDeclarationOnly": false,
+    "composite": false,
+    "declarationMap": false
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "jest.config.ts",
+    "jest.config.cts",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "eslint.config.js",
+    "eslint.config.cjs",
+    "eslint.config.mjs"
+  ],
+  "references": [
+    {
+      "path": "../../libs/core-util/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/core-enum/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/core-domain/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/core-database/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/core-contract/tsconfig.lib.json"
+    }
+  ]
+}

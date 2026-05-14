@@ -1,0 +1,36 @@
+{
+  "$schema": "https://swc.rs/schema.json",
+  "sourceMaps": true,
+  "jsc": {
+    "parser": {
+      "syntax": "typescript",
+      "decorators": true,
+      "dynamicImport": true
+    },
+    "transform": {
+      "legacyDecorator": true,
+      "decoratorMetadata": true
+    },
+    "keepClassNames": true,
+    "target": "es2022",
+    "externalHelpers": false,
+    "loose": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@admin-api/*": ["../*"],
+      "@libs/core-domain/*": ["../../../libs/core-domain/*"],
+      "@libs/core-database/*": ["../../../libs/core-database/*"],
+      "@libs/core-enum/*": ["../../../libs/core-enum/*"],
+      "@libs/core-contract/*": ["../../../libs/core-contract/*"],
+      "@libs/core-util/*": ["../../../libs/core-util/*"]
+    }
+  },
+  "module": {
+    "type": "commonjs"
+  },
+  "exclude": [
+    "jest.config.ts",
+    ".*\\.spec.ts$",
+    ".*\\.test.ts$"
+  ]
+}

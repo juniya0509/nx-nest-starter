@@ -1,0 +1,36 @@
+{
+  "name": "@nx-nest-starter/core-database",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "@nx-nest-starter/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "nx": {
+    "name": "core-database",
+    "tags": [
+      "scope:shared",
+      "layer:database"
+    ]
+  },
+  "dependencies": {
+    "@nestjs/common": "catalog:",
+    "@nestjs/config": "catalog:",
+    "@nestjs/typeorm": "catalog:",
+    "@nx-nest-starter/core-enum": "workspace:*",
+    "@slack/client": "catalog:",
+    "sql-formatter": "^15.7.3",
+    "tslib": "catalog:",
+    "typeorm": "catalog:",
+    "typeorm-naming-strategies": "catalog:",
+    "typeorm-transactional": "catalog:"
+  }
+}

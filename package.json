@@ -1,0 +1,69 @@
+{
+  "name": "@nx-nest-starter/source",
+  "version": "1.0.0",
+  "license": "UNLICENSED",
+  "private": true,
+  "packageManager": "pnpm@10.33.1",
+  "engines": {
+    "node": "22.14.0",
+    "pnpm": "10.33.1"
+  },
+  "scripts": {
+    "catalog:add": "node scripts/catalog-add.mjs",
+    "encoding-env-base64": "node scripts/encoding-env.mjs",
+    "admin": "pnpm -F @nx-nest-starter/admin-api",
+    "core": "pnpm -F @nx-nest-starter/core-api",
+    "batch": "pnpm -F @nx-nest-starter/batch",
+    "dev": "bash scripts/dev-all.sh"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.8.0",
+    "@inquirer/prompts": "^8.4.2",
+    "@nestjs/schematics": "^11.1.0",
+    "@nestjs/testing": "^11.0.0",
+    "@nx/eslint": "^22.6.5",
+    "@nx/eslint-plugin": "22.6.5",
+    "@nx/jest": "^22.6.5",
+    "@nx/js": "22.6.5",
+    "@nx/nest": "^22.6.5",
+    "@nx/node": "^22.6.5",
+    "@nx/web": "22.6.5",
+    "@swc-node/register": "~1.11.1",
+    "@swc/cli": "^0.8.1",
+    "@swc/core": "~1.15.5",
+    "@swc/helpers": "~0.5.18",
+    "@swc/jest": "~0.2.38",
+    "@types/jest": "^30.0.0",
+    "@types/node": "20.19.9",
+    "@typescript-eslint/eslint-plugin": "^8.59.0",
+    "@typescript-eslint/parser": "^8.59.0",
+    "chokidar": "^5.0.0",
+    "concurrently": "catalog:",
+    "cross-env": "^10.1.0",
+    "eslint": "^9.8.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.5",
+    "jest": "^30.0.2",
+    "jest-environment-node": "^30.0.2",
+    "jest-util": "^30.0.2",
+    "jsonc-eslint-parser": "^2.1.0",
+    "nodemon": "catalog:",
+    "nx": "22.6.5",
+    "prettier": "~3.6.2",
+    "ts-jest": "^29.4.0",
+    "ts-node": "10.9.1",
+    "tsc-alias": "catalog:",
+    "tslib": "^2.3.0",
+    "typescript": "~5.9.2",
+    "typescript-eslint": "^8.40.0",
+    "yaml": "^2.8.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@swc/core",
+      "nx",
+      "unrs-resolver",
+      "@parcel/watcher"
+    ]
+  }
+}

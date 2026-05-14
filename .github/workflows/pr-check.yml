@@ -1,0 +1,87 @@
+name: PR check (CI only)
+
+# ────────────────────────────────────────────────────────────
+# 트리거 : pull_request (feature → develop)
+# 환경   : development (GitHub Environment — i18n / env secret 접근)
+# 동작   :
+#   1) ci job — nx affected 기반 lint / unit / build / e2e
+#               · 변경된 앱만 검증
+#               · libs 변경 시 의존 앱 모두 affected 처리
+# 배포   : 없음 (CI only — 머지 후 pipeline-develop.yml 가 CD 진행)
+# 상세   : .claude/docs/CD.md
+# ────────────────────────────────────────────────────────────
+
+on:
+  pull_request:
+    branches: [develop]
+
+concurrency:
+  group: ci-pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: development
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Derive base/head SHAs for nx affected
+        uses: nrwl/nx-set-shas@v4
+        with:
+          main-branch-name: develop
+
+      - name: Decode app .env.development files (base64 secrets → apps/<app>/.env.development)
+        env:
+          ADMIN_ENV_BASE64: ${{ secrets.ADMIN_API_ENV_BASE64 }}
+          CORE_ENV_BASE64: ${{ secrets.CORE_API_ENV_BASE64 }}
+          BATCH_ENV_BASE64: ${{ secrets.BATCH_ENV_BASE64 }}
+        run: |
+          echo "$ADMIN_ENV_BASE64" | base64 -d > apps/admin-api/.env.development
+          echo "$CORE_ENV_BASE64" | base64 -d > apps/core-api/.env.development
+          echo "$BATCH_ENV_BASE64" | base64 -d > apps/batch/.env.development
+
+      - name: Download i18n translations (Lokalise)
+        env:
+          NODE_ENV: development
+        run: |
+          pnpm admin i18n:download
+          pnpm core i18n:download
+
+      - name: Show affected projects
+        run: pnpm nx show projects --affected
+
+      - name: Lint (affected)
+        run: pnpm nx affected --target=lint --parallel=3
+
+      - name: Unit test (affected)
+        run: pnpm nx affected --target=test --parallel=1 --skip-nx-cache
+
+      - name: Build (affected)
+        run: pnpm nx affected --target=build -c=local --parallel=2
+
+      # affected 프로젝트 목록을 추출해서 변경된 앱의 e2e 만 실행.
+      # 한 앱만 변경되면 그 앱만, lib 변경되면 의존하는 모든 앱.
+      - name: E2E (affected only)
+        run: |
+          AFFECTED=$(pnpm exec nx show projects --affected --json)
+          echo "Affected projects: $AFFECTED"
+          if echo "$AFFECTED" | grep -q '"admin-api"'; then
+            echo "▶ Running admin-api e2e"
+            pnpm admin test:e2e
+          fi
+          if echo "$AFFECTED" | grep -q '"core-api"'; then
+            echo "▶ Running core-api e2e"
+            pnpm core test:e2e
+          fi
+          if echo "$AFFECTED" | grep -q '"batch"'; then
+            echo "▶ Running batch e2e"
+            pnpm batch test:e2e
+          fi

@@ -1,0 +1,145 @@
+{
+  "name": "@nx-nest-starter/core-api",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "i18n:download": "tsx ./src/i18n/DownloadI18n.ts",
+    "swagger:generate": "cross-env NODE_ENV=local ts-node --project tsconfig.app.json -r tsconfig-paths/register src/support/api-docs/script/SwaggerGenerator.ts",
+    "lint": "nx run-many --target=lint --projects=core-api,core-domain,core-enum,core-contract,core-util,core-database",
+    "test": "pnpm test:unit && pnpm test:e2e",
+    "test:unit": "nx run-many --target=test --projects=core-api,core-domain --skip-nx-cache --passWithNoTests --parallel=1 --output-style=stream-without-prefixes",
+    "test:e2e": "jest --config e2e-test/jest.config.cts --forceExit",
+    "start:dev:local": "bash ../../scripts/dev-app.sh core-api 9229",
+    "build:local": "pnpm lint && nx build core-api -c local",
+    "start:local": "cross-env NODE_ENV=local node $(pwd)/../../dist/apps/core-api/src/main.js",
+    "build:development": "pnpm lint && nx build core-api -c development",
+    "start:development": "cross-env NODE_ENV=development node $(pwd)/../../dist/apps/core-api/src/main.js",
+    "build:production": "pnpm lint && nx build core-api -c production",
+    "start:production": "cross-env NODE_ENV=production node $(pwd)/../../dist/apps/core-api/src/main.js"
+  },
+  "nx": {
+    "name": "core-api",
+    "projectType": "application",
+    "sourceRoot": "apps/core-api/src",
+    "includedScripts": [],
+    "tags": [
+      "app:core-api",
+      "scope:app"
+    ],
+    "targets": {
+      "build": {
+        "executor": "@nx/js:swc",
+        "outputs": [
+          "{options.outputPath}"
+        ],
+        "options": {
+          "outputPath": "dist/apps/core-api",
+          "main": "apps/core-api/src/main.ts",
+          "tsConfig": "apps/core-api/tsconfig.app.json",
+          "swcrc": "apps/core-api/.swcrc",
+          "generatePackageJson": true,
+          "skipTypeCheck": true
+        },
+        "configurations": {
+          "local": {
+            "args": [
+              "node-env=local"
+            ]
+          },
+          "development": {
+            "args": [
+              "node-env=development"
+            ]
+          },
+          "production": {
+            "args": [
+              "node-env=production"
+            ]
+          }
+        }
+      },
+      "serve": {
+        "continuous": true,
+        "executor": "@nx/js:node",
+        "defaultConfiguration": "development",
+        "dependsOn": [
+          "build"
+        ],
+        "options": {
+          "buildTarget": "core-api:build",
+          "runBuildTargetDependencies": false,
+          "watch": true,
+          "port": 9229
+        },
+        "configurations": {
+          "local": {
+            "buildTarget": "core-api:build:local"
+          },
+          "development": {
+            "buildTarget": "core-api:build:development"
+          },
+          "production": {
+            "buildTarget": "core-api:build:production"
+          }
+        }
+      },
+      "test": {
+        "options": {
+          "passWithNoTests": true
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@aws-sdk/client-ses": "catalog:",
+    "@nx-nest-starter/core-contract": "workspace:*",
+    "@nx-nest-starter/core-database": "workspace:*",
+    "@nx-nest-starter/core-domain": "workspace:*",
+    "@nx-nest-starter/core-enum": "workspace:*",
+    "@nx-nest-starter/core-util": "workspace:*",
+    "@nestjs/common": "catalog:",
+    "@nestjs/config": "catalog:",
+    "@nestjs/core": "catalog:",
+    "@nestjs/jwt": "catalog:",
+    "@nestjs/platform-express": "catalog:",
+    "@nestjs/swagger": "catalog:",
+    "@nestjs/typeorm": "catalog:",
+    "@sentry/nestjs": "catalog:",
+    "@slack/client": "catalog:",
+    "@swc/helpers": "catalog:",
+    "class-transformer": "catalog:",
+    "class-validator": "catalog:",
+    "cookie-parser": "catalog:",
+    "dayjs": "catalog:",
+    "dotenv": "catalog:",
+    "firebase-admin": "catalog:",
+    "joi": "catalog:",
+    "morgan": "catalog:",
+    "mysql2": "catalog:",
+    "nestjs-i18n": "catalog:",
+    "reflect-metadata": "catalog:",
+    "rxjs": "catalog:",
+    "ts-jenum": "catalog:",
+    "tslib": "catalog:",
+    "typeorm": "catalog:",
+    "typeorm-naming-strategies": "catalog:",
+    "typeorm-transactional": "catalog:",
+    "winston": "catalog:",
+    "winston-daily-rotate-file": "catalog:"
+  },
+  "devDependencies": {
+    "@lokalise/node-api": "catalog:",
+    "@nestjs/testing": "catalog:",
+    "@testcontainers/mysql": "catalog:",
+    "@types/adm-zip": "catalog:",
+    "@types/cookie-parser": "catalog:",
+    "@types/express": "catalog:",
+    "@types/morgan": "catalog:",
+    "@types/supertest": "catalog:",
+    "adm-zip": "catalog:",
+    "neverthrow": "catalog:",
+    "supertest": "catalog:",
+    "testcontainers": "catalog:",
+    "tsx": "catalog:"
+  }
+}

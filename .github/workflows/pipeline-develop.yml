@@ -1,0 +1,123 @@
+name: Pipeline (develop) — CI + CD
+
+# ────────────────────────────────────────────────────────────
+# 트리거 : push to develop
+# 환경   : development (GitHub Environment, secret/var 환경별 격리)
+# 동작   :
+#   1) ci job       — 전체 lint/test/build/e2e + nx affected projects 계산
+#   2) deploy-<app> — affected = true 인 앱만 ECR push + CodeDeploy
+#                     · admin-api / core-api 만 변경 → 해당 앱만 배포
+#                     · libs/core-* 또는 workspace-wide 변경 → 모든 앱 배포
+# 상세   : .claude/docs/CD.md
+# ────────────────────────────────────────────────────────────
+
+on:
+  push:
+    branches: [develop]
+
+concurrency:
+  group: pipeline-develop
+  cancel-in-progress: false # 머지된 커밋은 누적 검증 — cancel 하지 않는다
+
+permissions:
+  id-token: write # AWS OIDC
+  contents: read
+  actions: read # nrwl/nx-set-shas — last successful workflow run sha 조회
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: development
+    outputs:
+      affected_admin: ${{ steps.affected.outputs.admin }}
+      affected_core: ${{ steps.affected.outputs.core }}
+      affected_batch: ${{ steps.affected.outputs.batch }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Derive base/head SHAs for nx affected
+        uses: nrwl/nx-set-shas@v4
+        with:
+          main-branch-name: develop
+
+      - name: Decode app .env.development files (base64 secrets → apps/<app>/.env.development)
+        env:
+          ADMIN_ENV_BASE64: ${{ secrets.ADMIN_API_ENV_BASE64 }}
+          CORE_ENV_BASE64: ${{ secrets.CORE_API_ENV_BASE64 }}
+          BATCH_ENV_BASE64: ${{ secrets.BATCH_ENV_BASE64 }}
+        run: |
+          echo "$ADMIN_ENV_BASE64" | base64 -d > apps/admin-api/.env.development
+          echo "$CORE_ENV_BASE64" | base64 -d > apps/core-api/.env.development
+          echo "$BATCH_ENV_BASE64" | base64 -d > apps/batch/.env.development
+
+      - name: Download i18n translations (Lokalise)
+        env:
+          NODE_ENV: development
+        run: |
+          pnpm admin i18n:download
+          pnpm core i18n:download
+
+      - name: Lint (all)
+        run: pnpm nx run-many --target=lint --projects=admin-api,core-api,batch,core-domain,core-enum,core-database,core-contract,core-util --parallel=3
+
+      - name: Unit test (all)
+        run: pnpm nx run-many --target=test --projects=admin-api,core-api,batch,core-domain --skip-nx-cache --parallel=1
+
+      - name: Build (all, production config)
+        run: pnpm nx run-many --target=build --projects=admin-api,core-api,batch -c=production --parallel=2
+
+      - name: E2E — admin-api
+        run: pnpm admin test:e2e
+
+      - name: E2E — core-api
+        run: pnpm core test:e2e
+
+      - name: E2E — batch
+        run: pnpm batch test:e2e
+
+      # nx affected 로 어느 앱이 변경됐는지 판정 → 다음 deploy job 의 if 조건으로 전달
+      - name: Compute affected apps
+        id: affected
+        run: |
+          AFFECTED=$(pnpm exec nx show projects --affected --json)
+          echo "Affected: $AFFECTED"
+          echo "admin=$(echo "$AFFECTED" | grep -q '"admin-api"' && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "core=$(echo "$AFFECTED" | grep -q '"core-api"' && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "batch=$(echo "$AFFECTED" | grep -q '"batch"' && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+  deploy-admin-api:
+    needs: ci
+    if: needs.ci.outputs.affected_admin == 'true'
+    uses: ./.github/workflows/deploy-app.yml
+    with:
+      app: admin-api
+      environment: development
+      health_port: 3000
+    secrets: inherit
+
+  deploy-core-api:
+    needs: ci
+    if: needs.ci.outputs.affected_core == 'true'
+    uses: ./.github/workflows/deploy-app.yml
+    with:
+      app: core-api
+      environment: development
+      health_port: 3000
+    secrets: inherit
+
+  deploy-batch:
+    needs: ci
+    if: needs.ci.outputs.affected_batch == 'true'
+    uses: ./.github/workflows/deploy-app.yml
+    with:
+      app: batch
+      environment: development
+      health_port: 3001
+    secrets: inherit

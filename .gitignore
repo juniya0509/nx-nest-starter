@@ -1,0 +1,49 @@
+# 시스템 파일
+.DS_Store
+Thumbs.db
+
+# IDE - VSCode (팀 공용 설정만 커밋)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# 빌드 산출물
+dist
+tmp
+out-tsc
+*.tsbuildinfo
+
+# 의존성
+node_modules
+.pnpm-store/
+
+# IDE - 기타 (실수로 커밋되는 것 방지)
+.idea/
+*.iml
+
+# Nx 캐시
+.nx/cache
+.nx/workspace-data
+
+# 테스트 및 커버리지
+/coverage
+test-output
+
+# 환경변수 (로컬 전용, *.example만 커밋)
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# 로그 파일
+*.log
+pnpm-debug.log*
+
+# 언어 파일
+locale
+
+# Claude
+.claude/worktrees
+.claude/settings.local.json

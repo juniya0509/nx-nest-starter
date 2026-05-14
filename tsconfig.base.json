@@ -1,0 +1,43 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "lib": ["es2022"],
+
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+
+    "composite": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "isolatedModules": true,
+
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    "importHelpers": true,
+
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "forceConsistentCasingInFileNames": true,
+
+    "skipLibCheck": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@admin-api/*": ["apps/admin-api/*"],
+      "@core-api/*": ["apps/core-api/*"],
+      "@batch/*": ["apps/batch/*"],
+      "@libs/core-domain/*": ["libs/core-domain/*"],
+      "@libs/core-database/*": ["libs/core-database/*"],
+      "@libs/core-enum/*": ["libs/core-enum/*"],
+      "@libs/core-contract/*": ["libs/core-contract/*"],
+      "@libs/core-util/*": ["libs/core-util/*"]
+    }
+  }
+}

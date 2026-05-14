@@ -1,0 +1,59 @@
+{
+  "name": "@nx-nest-starter/core-domain",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "@nx-nest-starter/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "nx": {
+    "name": "core-domain",
+    "tags": [
+      "scope:shared",
+      "layer:domain"
+    ],
+    "targets": {
+      "build": {
+        "executor": "nx:run-commands",
+        "options": {
+          "commands": [
+            "tsc --build libs/core-domain/tsconfig.lib.json",
+            "tsc-alias -p libs/core-domain/tsconfig.lib.json"
+          ],
+          "parallel": false
+        },
+        "dependsOn": ["^build"],
+        "outputs": [
+          "{workspaceRoot}/dist/libs/core-domain"
+        ],
+        "cache": true,
+        "inputs": ["production", "^production"]
+      }
+    }
+  },
+  "dependencies": {
+    "ts-jenum": "catalog:",
+    "tslib": "catalog:",
+    "@aws-sdk/client-ses": "catalog:",
+    "firebase-admin": "catalog:",
+    "@nestjs/common": "catalog:",
+    "@nestjs/config": "catalog:",
+    "@nestjs/jwt": "catalog:",
+    "dayjs": "catalog:",
+    "neverthrow": "catalog:",
+    "@nx-nest-starter/core-contract": "workspace:*",
+    "@nx-nest-starter/core-database": "workspace:*",
+    "@nx-nest-starter/core-enum": "workspace:*"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "catalog:"
+  }
+}

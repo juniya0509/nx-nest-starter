@@ -1,0 +1,108 @@
+{
+  "name": "@nx-nest-starter/batch",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "lint": "nx run-many --target=lint --projects=batch,core-domain,core-enum,core-contract,core-util,core-database",
+    "test": "pnpm test:unit && pnpm test:e2e",
+    "test:unit": "nx run-many --target=test --projects=batch,core-domain --skip-nx-cache --passWithNoTests --parallel=1 --output-style=stream-without-prefixes",
+    "test:e2e": "jest --config e2e-test/jest.config.cts --passWithNoTests --forceExit",
+    "start:dev:local": "bash ../../scripts/dev-app.sh batch 9231",
+    "build:local": "pnpm lint && nx build batch -c local",
+    "start:local": "cross-env NODE_ENV=local node $(pwd)/../../dist/apps/batch/src/main.js",
+    "build:development": "pnpm lint && nx build batch -c development",
+    "start:development": "cross-env NODE_ENV=development node $(pwd)/../../dist/apps/batch/src/main.js",
+    "build:production": "pnpm lint && nx build batch -c production",
+    "start:production": "cross-env NODE_ENV=production node $(pwd)/../../dist/apps/batch/src/main.js"
+  },
+  "nx": {
+    "name": "batch",
+    "projectType": "application",
+    "sourceRoot": "apps/batch/src",
+    "includedScripts": [],
+    "tags": [
+      "app:batch",
+      "scope:app"
+    ],
+    "targets": {
+      "build": {
+        "executor": "@nx/js:swc",
+        "outputs": [
+          "{options.outputPath}"
+        ],
+        "options": {
+          "outputPath": "dist/apps/batch",
+          "main": "apps/batch/src/main.ts",
+          "tsConfig": "apps/batch/tsconfig.app.json",
+          "swcrc": "apps/batch/.swcrc",
+          "generatePackageJson": true,
+          "skipTypeCheck": true
+        },
+        "configurations": {
+          "local": { "args": ["node-env=local"] },
+          "development": { "args": ["node-env=development"] },
+          "production": { "args": ["node-env=production"] }
+        }
+      },
+      "serve": {
+        "continuous": true,
+        "executor": "@nx/js:node",
+        "defaultConfiguration": "development",
+        "dependsOn": ["build"],
+        "options": {
+          "buildTarget": "batch:build",
+          "runBuildTargetDependencies": false,
+          "watch": true,
+          "port": 9231
+        },
+        "configurations": {
+          "local": { "buildTarget": "batch:build:local" },
+          "development": { "buildTarget": "batch:build:development" },
+          "production": { "buildTarget": "batch:build:production" }
+        }
+      },
+      "test": {
+        "options": {
+          "passWithNoTests": true
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@nestjs/common": "catalog:",
+    "@nx-nest-starter/core-contract": "workspace:*",
+    "@nx-nest-starter/core-database": "workspace:*",
+    "@nx-nest-starter/core-domain": "workspace:*",
+    "@nx-nest-starter/core-enum": "workspace:*",
+    "@nx-nest-starter/core-util": "workspace:*",
+    "@nestjs/config": "catalog:",
+    "@nestjs/core": "catalog:",
+    "@nestjs/platform-express": "catalog:",
+    "@nestjs/schedule": "catalog:",
+    "@nestjs/typeorm": "catalog:",
+    "@sentry/nestjs": "catalog:",
+    "@slack/client": "catalog:",
+    "@swc/helpers": "catalog:",
+    "dayjs": "catalog:",
+    "dotenv": "catalog:",
+    "joi": "catalog:",
+    "mysql2": "catalog:",
+    "reflect-metadata": "catalog:",
+    "rxjs": "catalog:",
+    "ts-jenum": "catalog:",
+    "tslib": "catalog:",
+    "typeorm": "catalog:",
+    "typeorm-naming-strategies": "catalog:",
+    "typeorm-transactional": "catalog:",
+    "winston": "catalog:",
+    "winston-daily-rotate-file": "catalog:"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "catalog:",
+    "@testcontainers/mysql": "catalog:",
+    "@types/express": "catalog:",
+    "@types/supertest": "catalog:",
+    "supertest": "catalog:",
+    "testcontainers": "catalog:"
+  }
+}

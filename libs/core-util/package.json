@@ -1,0 +1,17 @@
+{
+  "name": "@nx-nest-starter/core-util",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "name": "core-util",
+    "tags": [
+      "scope:shared",
+      "layer:util"
+    ]
+  },
+  "dependencies": {
+    "@nx-nest-starter/core-enum": "workspace:*",
+    "decimal.js": "catalog:",
+    "tslib": "catalog:"
+  }
+}

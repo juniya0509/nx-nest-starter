@@ -1,0 +1,3169 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1/health": {
+      "get": {
+        "description": "**이 API는 공통 Response를 적용받지 않습니다.**\n서버와 주요 의존성이 정상 작동 중인지 확인합니다.",
+        "operationId": "AdminHealthController_checkHealth",
+        "parameters": [
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "서버가 정상일 경우 true 반환",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Health Check",
+        "tags": [
+          "Health"
+        ],
+        "security": []
+      }
+    },
+    "/v1/health/ping": {
+      "get": {
+        "description": "**이 API는 공통 Response를 적용받지 않습니다.**\n서버 응답 속도를 확인하기 위한 ping 요청입니다.",
+        "operationId": "AdminHealthController_ping",
+        "parameters": [
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "서버가 정상일 경우 \"pong\" 반환",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Ping",
+        "tags": [
+          "Health"
+        ],
+        "security": []
+      }
+    },
+    "/v1/users": {
+      "get": {
+        "description": "페이지네이션 기반으로 유저 목록을 조회합니다. 키워드(이메일/이름 부분 일치)와 상태로 필터링할 수 있습니다.\n\n**Required Permissions (ALL):** `USER_LIST` (유저 목록 조회)",
+        "operationId": "AdminUserController_getUserList",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 (1-base)",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지당 결과 수",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "keyword",
+            "required": false,
+            "in": "query",
+            "description": "검색 키워드 (이메일/이름 부분 일치)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "유저 상태 필터",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "SUSPENDED",
+                "WITHDRAWN",
+                "DELETED"
+              ]
+            }
+          },
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AdminGetUserListRes"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "유저 목록 조회",
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/v1/users/{id}": {
+      "get": {
+        "description": "유저 ID로 상세 정보를 조회합니다. 해당 유저의 관리자 계정 보유 여부(isAdmin)도 함께 반환합니다.\n\n**Required Permissions (ALL):** `USER_READ` (유저 단건 조회)",
+        "operationId": "AdminUserController_getUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "유저 ID",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AdminGetUserRes"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "유저 상세 조회",
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/v1/admin-accounts": {
+      "post": {
+        "description": "특정 사용자(user.id)를 관리자로 등록합니다.\n권한 부여는 별도 API(`PUT /v1/admin-accounts/:id/permissions`, `PUT /v1/admin-accounts/:id/presets`)로 진행해주세요.\n\n**Required Permissions (ALL):** `ADMIN_ACCOUNT_MANAGE` (관리자 계정 등록/조회/삭제)",
+        "operationId": "AdminAccountController_createAdminAccount",
+        "parameters": [
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreateAccountReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "관리자 등록 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "존재하지 않는 유저",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "존재하지 않는 유저",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "USER_NOT_FOUND",
+                        "message": "존재하지 않는 유저",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/AdminApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "이미 등록된 관리자 계정",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "이미 등록된 관리자 계정",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "ADMIN_ACCOUNT_ALREADY_EXISTS",
+                        "message": "이미 등록된 관리자 계정",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/AdminApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "관리자 계정 등록",
+        "tags": [
+          "Admin Account"
+        ]
+      },
+      "get": {
+        "description": "페이지네이션 기반으로 관리자 계정 목록을 조회합니다. 키워드로 사용자 이메일/이름을 부분 검색할 수 있습니다.\n\n**Required Permissions (ALL):** `ADMIN_ACCOUNT_MANAGE` (관리자 계정 등록/조회/삭제)",
+        "operationId": "AdminAccountController_getAdminAccountList",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 (1-base)",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지당 결과 수",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "keyword",
+            "required": false,
+            "in": "query",
+            "description": "검색 키워드 (이메일/이름 부분 일치)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "관리자 상태 필터",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "SUSPENDED"
+              ]
+            }
+          },
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AdminGetAccountListRes"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "관리자 계정 목록 조회",
+        "tags": [
+          "Admin Account"
+        ]
+      }
+    },
+    "/v1/admin-accounts/me": {
+      "get": {
+        "description": "현재 로그인한 관리자 본인의 계정 정보를 조회합니다.\n직접 부여된 권한, 적용된 프리셋, 유효 권한이 모두 포함됩니다.\n관리자 권한이 있는 모든 사용자가 호출 가능합니다 (별도 권한 불필요).",
+        "operationId": "AdminAccountController_getMyAdminAccount",
+        "parameters": [
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AdminGetAccountRes"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "내 관리자 계정 조회",
+        "tags": [
+          "Admin Account"
+        ]
+      }
+    },
+    "/v1/admin-accounts/{id}": {
+      "get": {
+        "description": "관리자 계정의 정보를 조회합니다. 직접 부여된 권한, 적용된 프리셋, 유효 권한이 모두 포함됩니다.\n\n**Required Permissions (ALL):** `ADMIN_ACCOUNT_MANAGE` (관리자 계정 등록/조회/삭제)",
+        "operationId": "AdminAccountController_getAdminAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "관리자 계정 ID",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AdminGetAccountRes"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "존재하지 않는 관리자 계정 / 존재하지 않는 유저",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "존재하지 않는 관리자 계정",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "ADMIN_ACCOUNT_NOT_FOUND",
+                        "message": "존재하지 않는 관리자 계정",
+                        "data": null
+                      }
+                    }
+                  },
+                  "example2": {
+                    "summary": "존재하지 않는 유저",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "USER_NOT_FOUND",
+                        "message": "존재하지 않는 유저",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/AdminApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "관리자 계정 단건 조회",
+        "tags": [
+          "Admin Account"
+        ]
+      },
+      "delete": {
+        "description": "관리자 자격을 해제합니다 (soft delete). 직접 부여된 권한과 적용된 프리셋도 모두 정리됩니다. 사용자(user) 자체는 영향을 받지 않습니다.\n\n**Required Permissions (ALL):** `ADMIN_ACCOUNT_MANAGE` (관리자 계정 등록/조회/삭제)",
+        "operationId": "AdminAccountController_deleteAdminAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "관리자 계정 ID",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "삭제 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "존재하지 않는 관리자 계정 / 존재하지 않는 유저",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "존재하지 않는 관리자 계정",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "ADMIN_ACCOUNT_NOT_FOUND",
+                        "message": "존재하지 않는 관리자 계정",
+                        "data": null
+                      }
+                    }
+                  },
+                  "example2": {
+                    "summary": "존재하지 않는 유저",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "USER_NOT_FOUND",
+                        "message": "존재하지 않는 유저",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/AdminApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "관리자 계정 삭제",
+        "tags": [
+          "Admin Account"
+        ]
+      }
+    },
+    "/v1/admin-accounts/{id}/permissions": {
+      "put": {
+        "description": "관리자에게 직접 부여된 권한을 전체 교체합니다 (atomic).\n요청에 포함된 권한 코드만 남기고, 그 외 직접 부여 권한은 모두 제거됩니다.\n프리셋을 통한 권한은 영향받지 않습니다.\n\n**Required Permissions (ALL):** `ADMIN_PERMISSION_ASSIGN` (관리자에게 권한/프리셋 부여)",
+        "operationId": "AdminAccountController_setAdminAccountPermissions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "관리자 계정 ID",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSetPermissionsReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "권한 갱신 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "존재하지 않는 관리자 계정 / 존재하지 않는 유저",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "존재하지 않는 관리자 계정",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "ADMIN_ACCOUNT_NOT_FOUND",
+                        "message": "존재하지 않는 관리자 계정",
+                        "data": null
+                      }
+                    }
+                  },
+                  "example2": {
+                    "summary": "존재하지 않는 유저",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "USER_NOT_FOUND",
+                        "message": "존재하지 않는 유저",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/AdminApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "관리자 직접 권한 set 교체",
+        "tags": [
+          "Admin Account"
+        ]
+      }
+    },
+    "/v1/admin-accounts/{id}/presets": {
+      "put": {
+        "description": "관리자에게 적용된 프리셋을 전체 교체합니다 (atomic).\n요청에 포함된 프리셋 ID만 적용 상태로 남고, 그 외 프리셋은 적용 해제됩니다.\n직접 부여된 권한은 영향받지 않습니다.\n\n**Required Permissions (ALL):** `ADMIN_PERMISSION_ASSIGN` (관리자에게 권한/프리셋 부여)",
+        "operationId": "AdminAccountController_setAdminAccountPresets",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "관리자 계정 ID",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSetPresetsReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "프리셋 갱신 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "유효하지 않은 프리셋 ID",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "유효하지 않은 프리셋 ID",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "INVALID_PRESET_ID",
+                        "message": "유효하지 않은 프리셋 ID",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/AdminApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "존재하지 않는 관리자 계정",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "존재하지 않는 관리자 계정",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "ADMIN_ACCOUNT_NOT_FOUND",
+                        "message": "존재하지 않는 관리자 계정",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/AdminApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "관리자 적용 프리셋 set 교체",
+        "tags": [
+          "Admin Account"
+        ]
+      }
+    },
+    "/v1/admin-permission-presets": {
+      "post": {
+        "description": "여러 권한을 묶은 프리셋을 생성합니다. 프리셋이 적용된 관리자에게는 즉시 반영됩니다 (참조형).\n\n**Required Permissions (ALL):** `PERMISSION_PRESET_MANAGE` (권한 프리셋 생성/수정/삭제/조회)",
+        "operationId": "AdminPermissionPresetController_createPreset",
+        "parameters": [
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreatePresetReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AdminCreatePresetRes"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "이미 사용중인 프리셋 코드",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "이미 사용중인 프리셋 코드",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "PERMISSION_PRESET_CODE_DUPLICATE",
+                        "message": "이미 사용중인 프리셋 코드",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/AdminApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "권한 프리셋 생성",
+        "tags": [
+          "Admin Permission Preset"
+        ]
+      },
+      "get": {
+        "description": "등록된 모든 프리셋을 조회합니다. 각 프리셋의 권한 개수가 함께 반환됩니다.\n\n**Required Permissions (ALL):** `PERMISSION_PRESET_MANAGE` (권한 프리셋 생성/수정/삭제/조회)",
+        "operationId": "AdminPermissionPresetController_getPresetList",
+        "parameters": [
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AdminGetPresetListRes"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "권한 프리셋 목록 조회",
+        "tags": [
+          "Admin Permission Preset"
+        ]
+      }
+    },
+    "/v1/admin-permission-presets/{id}": {
+      "get": {
+        "description": "프리셋 정보와 포함된 권한 코드 목록을 조회합니다.\n\n**Required Permissions (ALL):** `PERMISSION_PRESET_MANAGE` (권한 프리셋 생성/수정/삭제/조회)",
+        "operationId": "AdminPermissionPresetController_getPreset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "프리셋 ID",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AdminGetPresetRes"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "존재하지 않는 권한 프리셋",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "존재하지 않는 권한 프리셋",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "PERMISSION_PRESET_NOT_FOUND",
+                        "message": "존재하지 않는 권한 프리셋",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/AdminApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "권한 프리셋 단건 조회",
+        "tags": [
+          "Admin Permission Preset"
+        ]
+      },
+      "patch": {
+        "description": "프리셋의 이름/설명/권한 구성을 수정합니다.\n권한 코드 목록은 전체 교체 방식으로 동작합니다 (요청에 포함된 코드만 남고 나머지는 제거).\n이 프리셋이 적용된 모든 관리자에게는 즉시 반영됩니다 (참조형).\n\n**Required Permissions (ALL):** `PERMISSION_PRESET_MANAGE` (권한 프리셋 생성/수정/삭제/조회)",
+        "operationId": "AdminPermissionPresetController_updatePreset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "프리셋 ID",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdatePresetReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "수정 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "존재하지 않는 권한 프리셋",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "존재하지 않는 권한 프리셋",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "PERMISSION_PRESET_NOT_FOUND",
+                        "message": "존재하지 않는 권한 프리셋",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/AdminApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "권한 프리셋 수정",
+        "tags": [
+          "Admin Permission Preset"
+        ]
+      },
+      "delete": {
+        "description": "프리셋을 삭제합니다 (soft delete). 이 프리셋이 적용되어 있던 관리자들은 해당 프리셋이 자동으로 적용 해제됩니다.\n\n**Required Permissions (ALL):** `PERMISSION_PRESET_MANAGE` (권한 프리셋 생성/수정/삭제/조회)",
+        "operationId": "AdminPermissionPresetController_deletePreset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "프리셋 ID",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "삭제 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "존재하지 않는 권한 프리셋",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "존재하지 않는 권한 프리셋",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "PERMISSION_PRESET_NOT_FOUND",
+                        "message": "존재하지 않는 권한 프리셋",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/AdminApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "권한 프리셋 삭제",
+        "tags": [
+          "Admin Permission Preset"
+        ]
+      }
+    },
+    "/v1/admin-permissions": {
+      "get": {
+        "description": "시스템에 정의된 모든 권한 코드를 조회합니다.\n관리자에게 권한을 부여하거나 프리셋을 구성할 때 UI 셀렉트 옵션으로 사용합니다.\n결과는 그룹 코드 → 권한 코드 순으로 정렬되어 반환됩니다.\n\n**Required Permissions (ALL):** `ADMIN_PERMISSION_LIST` (권한 카탈로그 조회)",
+        "operationId": "AdminPermissionController_getPermissionList",
+        "parameters": [
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AdminGetPermissionListRes"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "권한 카탈로그 조회",
+        "tags": [
+          "Admin Permission"
+        ]
+      }
+    },
+    "/v1/mails/bulk/raw": {
+      "post": {
+        "description": "관리자가 자유 입력한 subject/html 으로 다수 수신자에게 발송합니다.\n개별 수신자별 성공/실패가 응답에 포함됩니다 (전체가 실패해도 200).\n최대 100명까지 한 번에 발송할 수 있습니다.\n\n**Required Permissions (ALL):** `MAIL_SEND` (고객에게 이메일 발송)",
+        "operationId": "AdminMailController_sendBulkRaw",
+        "parameters": [
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSendBulkRawReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AdminSendMailRes"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "유효하지 않은 수신자",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "유효하지 않은 수신자",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "INVALID_MAIL_RECIPIENT",
+                        "message": "유효하지 않은 수신자",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/AdminApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "메일 발송 (raw)",
+        "tags": [
+          "Mail"
+        ]
+      }
+    },
+    "/v1/mails/bulk/template": {
+      "post": {
+        "description": "사전 정의된 템플릿 + 변수로 다수 수신자에게 발송합니다.\ntemplateId 와 그에 맞는 vars 를 입력합니다 (templateId 별 필요 키는 vars 필드 설명 참고).\n\n**Required Permissions (ALL):** `MAIL_SEND` (고객에게 이메일 발송)",
+        "operationId": "AdminMailController_sendBulkByTemplate",
+        "parameters": [
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSendBulkTemplateReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AdminSendMailRes"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "유효하지 않은 수신자",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "유효하지 않은 수신자",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "INVALID_MAIL_RECIPIENT",
+                        "message": "유효하지 않은 수신자",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/AdminApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "메일 발송 (template)",
+        "tags": [
+          "Mail"
+        ]
+      }
+    },
+    "/v1/pushes/bulk/raw": {
+      "post": {
+        "description": "관리자가 자유 입력한 단일 title/body 로 다수 user 의 모든 device 에 push 알림을 발송합니다.\nlang 분기 없이 모든 device 에 동일 콘텐츠가 전송됩니다 (다국어가 필요하면 lang 별로 별도 호출).\n미등록 user.id 가 한 명이라도 있으면 400 으로 거부합니다. user_device 가 없는 user 는 발송 대상에서 자동 제외.\n응답의 successCount/failedCount 는 user 수가 아닌 device 수 기준입니다.\n\n**Required Permissions (ALL):** `PUSH_SEND` (고객에게 push 알림 발송)",
+        "operationId": "AdminPushController_sendBulkRaw",
+        "parameters": [
+          {
+            "required": true,
+            "name": "x-user-lang",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en-US",
+                "ko",
+                "fr",
+                "es",
+                "de",
+                "ja",
+                "ms"
+              ]
+            },
+            "description": "사용자의 언어 코드"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSendBulkPushRawReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCESS"
+                      ]
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AdminSendPushRes"
+                    },
+                    "error": {
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "유효하지 않은 수신자",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "유효하지 않은 수신자",
+                    "value": {
+                      "result": "ERROR",
+                      "data": null,
+                      "error": {
+                        "code": "INVALID_MAIL_RECIPIENT",
+                        "message": "유효하지 않은 수신자",
+                        "data": null
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ERROR"
+                      ]
+                    },
+                    "data": {
+                      "type": "null",
+                      "nullable": true
+                    },
+                    "error": {
+                      "$ref": "#/components/schemas/AdminApiErrorMessage"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Access JWT": []
+          }
+        ],
+        "summary": "Push 알림 발송 (raw)",
+        "tags": [
+          "Push"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Nx Nest Starter Admin API",
+    "description": "",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "Access JWT": {
+        "scheme": "bearer",
+        "name": "Access JWT",
+        "type": "http",
+        "in": "header",
+        "description": "Access JWT for user authentication",
+        "x-apidog": {
+          "authType": "bearer",
+          "addTokenTo": "header",
+          "headerPrefix": "Bearer",
+          "token": "{{bearerToken}}"
+        }
+      }
+    },
+    "schemas": {
+      "AdminApiErrorMessage": {
+        "type": "object",
+        "properties": {
+          "traceId": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "traceId",
+          "code",
+          "message"
+        ]
+      },
+      "AdminApiResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string",
+            "enum": [
+              "SUCCESS",
+              "ERROR"
+            ]
+          },
+          "data": {
+            "type": "object"
+          },
+          "error": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminApiErrorMessage"
+              }
+            ]
+          }
+        },
+        "required": [
+          "result",
+          "data",
+          "error"
+        ]
+      },
+      "AdminUserListItemRes": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "유저 ID"
+          },
+          "email": {
+            "type": "string",
+            "description": "이메일"
+          },
+          "firstname": {
+            "type": "string",
+            "nullable": true,
+            "description": "이름"
+          },
+          "lastname": {
+            "type": "string",
+            "nullable": true,
+            "description": "성"
+          },
+          "fullname": {
+            "type": "string",
+            "description": "firstname + lastname (둘 다 없으면 빈 문자열)"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "아바타 URL"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED",
+              "WITHDRAWN",
+              "DELETED"
+            ],
+            "description": "유저 상태"
+          },
+          "countryCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "국가 코드 (ISO 3166-1 alpha-2)"
+          },
+          "countryCallingCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "국가 전화 코드 (예: +82)"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true,
+            "description": "전화번호"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "가입 일시"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "firstname",
+          "lastname",
+          "fullname",
+          "avatarUrl",
+          "status",
+          "countryCode",
+          "countryCallingCode",
+          "phoneNumber",
+          "createdAt"
+        ]
+      },
+      "AdminGetUserListRes": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "description": "총 페이지 수"
+          },
+          "totalResults": {
+            "type": "integer",
+            "description": "총 결과 개수"
+          },
+          "list": {
+            "description": "유저 목록",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminUserListItemRes"
+            }
+          }
+        },
+        "required": [
+          "totalPages",
+          "totalResults",
+          "list"
+        ]
+      },
+      "AdminGetUserRes": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "유저 ID"
+          },
+          "email": {
+            "type": "string",
+            "description": "이메일"
+          },
+          "firstname": {
+            "type": "string",
+            "nullable": true,
+            "description": "이름"
+          },
+          "lastname": {
+            "type": "string",
+            "nullable": true,
+            "description": "성"
+          },
+          "fullname": {
+            "type": "string",
+            "description": "firstname + lastname (둘 다 없으면 빈 문자열)"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "아바타 URL"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED",
+              "WITHDRAWN",
+              "DELETED"
+            ],
+            "description": "유저 상태"
+          },
+          "countryCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "국가 코드 (ISO 3166-1 alpha-2)"
+          },
+          "countryCallingCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "국가 전화 코드 (예: +82)"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true,
+            "description": "전화번호"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "가입 일시"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "최근 수정 일시"
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "description": "관리자 계정 보유 여부"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "firstname",
+          "lastname",
+          "fullname",
+          "avatarUrl",
+          "status",
+          "countryCode",
+          "countryCallingCode",
+          "phoneNumber",
+          "createdAt",
+          "updatedAt",
+          "isAdmin"
+        ]
+      },
+      "AdminApiError": {
+        "type": "object",
+        "properties": {}
+      },
+      "AdminCreateAccountReq": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "관리자로 등록할 사용자 ID (user.id)",
+            "example": 1
+          },
+          "memo": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 500,
+            "description": "관리자 메모 (선택)"
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "AdminAccountListItemRes": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "관리자 계정 ID"
+          },
+          "userId": {
+            "type": "integer",
+            "description": "연결된 사용자 ID"
+          },
+          "userEmail": {
+            "type": "string",
+            "description": "사용자 이메일"
+          },
+          "userFullname": {
+            "type": "string",
+            "description": "사용자 이름 (이름 + 성)"
+          },
+          "userAvatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "사용자 아바타 URL"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED"
+            ],
+            "description": "관리자 상태"
+          },
+          "memo": {
+            "type": "string",
+            "nullable": true,
+            "description": "관리자 메모"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "관리자 등록 일시"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "userEmail",
+          "userFullname",
+          "userAvatarUrl",
+          "status",
+          "memo",
+          "createdAt"
+        ]
+      },
+      "AdminGetAccountListRes": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "description": "총 페이지 수"
+          },
+          "totalResults": {
+            "type": "integer",
+            "description": "총 결과 개수"
+          },
+          "list": {
+            "description": "관리자 계정 목록",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminAccountListItemRes"
+            }
+          }
+        },
+        "required": [
+          "totalPages",
+          "totalResults",
+          "list"
+        ]
+      },
+      "AppliedPresetRes": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "프리셋 ID"
+          },
+          "code": {
+            "type": "string",
+            "description": "프리셋 코드"
+          },
+          "name": {
+            "type": "string",
+            "description": "프리셋 이름"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name"
+        ]
+      },
+      "AdminGetAccountRes": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "관리자 계정 ID"
+          },
+          "userId": {
+            "type": "integer",
+            "description": "연결된 사용자 ID"
+          },
+          "userEmail": {
+            "type": "string",
+            "description": "사용자 이메일"
+          },
+          "userFullname": {
+            "type": "string",
+            "description": "사용자 이름"
+          },
+          "userAvatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "사용자 아바타 URL"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED"
+            ],
+            "description": "관리자 상태"
+          },
+          "memo": {
+            "type": "string",
+            "nullable": true,
+            "description": "관리자 메모"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "관리자 등록 일시"
+          },
+          "directPermissionCodes": {
+            "description": "직접 부여된 권한 코드 목록",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "appliedPresets": {
+            "description": "적용된 프리셋 목록",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppliedPresetRes"
+            }
+          },
+          "effectivePermissionCodes": {
+            "description": "유효 권한 코드 (직접 + 프리셋 합집합)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "userEmail",
+          "userFullname",
+          "userAvatarUrl",
+          "status",
+          "memo",
+          "createdAt",
+          "directPermissionCodes",
+          "appliedPresets",
+          "effectivePermissionCodes"
+        ]
+      },
+      "AdminSetPermissionsReq": {
+        "type": "object",
+        "properties": {
+          "permissionCodes": {
+            "type": "array",
+            "description": "관리자에게 직접 부여할 권한 코드 목록 (전체 교체)",
+            "example": [
+              "USER_LIST",
+              "USER_READ"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "ADMIN_ACCOUNT_MANAGE",
+                "PERMISSION_PRESET_MANAGE",
+                "ADMIN_PERMISSION_ASSIGN",
+                "ADMIN_PERMISSION_LIST",
+                "USER_LIST",
+                "USER_READ",
+                "USER_SUSPEND",
+                "MAIL_SEND",
+                "PUSH_SEND"
+              ]
+            }
+          }
+        },
+        "required": [
+          "permissionCodes"
+        ]
+      },
+      "AdminSetPresetsReq": {
+        "type": "object",
+        "properties": {
+          "presetIds": {
+            "description": "관리자에게 적용할 프리셋 ID 목록 (전체 교체)",
+            "example": [
+              1,
+              2
+            ],
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        },
+        "required": [
+          "presetIds"
+        ]
+      },
+      "AdminCreatePresetRes": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "생성된 프리셋 ID"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "AdminCreatePresetReq": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "pattern": "^[A-Z][A-Z0-9_]*$",
+            "description": "프리셋 코드 (대문자/숫자/언더스코어, 대문자로 시작)",
+            "example": "ROOT"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "프리셋 표시명",
+            "example": "루트 관리자"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 500,
+            "description": "프리셋 설명"
+          },
+          "permissionCodes": {
+            "type": "array",
+            "description": "프리셋에 포함할 권한 코드 목록",
+            "example": [
+              "USER_LIST",
+              "USER_READ"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "ADMIN_ACCOUNT_MANAGE",
+                "PERMISSION_PRESET_MANAGE",
+                "ADMIN_PERMISSION_ASSIGN",
+                "ADMIN_PERMISSION_LIST",
+                "USER_LIST",
+                "USER_READ",
+                "USER_SUSPEND",
+                "MAIL_SEND",
+                "PUSH_SEND"
+              ]
+            }
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "permissionCodes"
+        ]
+      },
+      "AdminPresetListItemRes": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "프리셋 ID"
+          },
+          "code": {
+            "type": "string",
+            "description": "프리셋 코드"
+          },
+          "name": {
+            "type": "string",
+            "description": "프리셋 이름"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "프리셋 설명"
+          },
+          "permissionCount": {
+            "type": "integer",
+            "description": "포함된 권한 수"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "생성 일시"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "description",
+          "permissionCount",
+          "createdAt"
+        ]
+      },
+      "AdminGetPresetListRes": {
+        "type": "object",
+        "properties": {
+          "list": {
+            "description": "프리셋 목록",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminPresetListItemRes"
+            }
+          }
+        },
+        "required": [
+          "list"
+        ]
+      },
+      "AdminGetPresetRes": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "프리셋 ID"
+          },
+          "code": {
+            "type": "string",
+            "description": "프리셋 코드"
+          },
+          "name": {
+            "type": "string",
+            "description": "프리셋 이름"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "프리셋 설명"
+          },
+          "permissionCodes": {
+            "description": "포함된 권한 코드 목록",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "생성 일시"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "description",
+          "permissionCodes",
+          "createdAt"
+        ]
+      },
+      "AdminUpdatePresetReq": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "프리셋 표시명"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 500,
+            "description": "프리셋 설명"
+          },
+          "permissionCodes": {
+            "type": "array",
+            "description": "프리셋에 포함할 권한 코드 목록 (전체 교체)",
+            "example": [
+              "USER_LIST",
+              "USER_READ"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "ADMIN_ACCOUNT_MANAGE",
+                "PERMISSION_PRESET_MANAGE",
+                "ADMIN_PERMISSION_ASSIGN",
+                "ADMIN_PERMISSION_LIST",
+                "USER_LIST",
+                "USER_READ",
+                "USER_SUSPEND",
+                "MAIL_SEND",
+                "PUSH_SEND"
+              ]
+            }
+          }
+        },
+        "required": [
+          "name",
+          "permissionCodes"
+        ]
+      },
+      "AdminPermissionItemRes": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "권한 ID"
+          },
+          "code": {
+            "type": "string",
+            "description": "권한 코드"
+          },
+          "groupCode": {
+            "type": "string",
+            "description": "권한 그룹 코드 (예: user, admin-management)"
+          },
+          "description": {
+            "type": "string",
+            "description": "권한 표시명"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "groupCode",
+          "description"
+        ]
+      },
+      "AdminGetPermissionListRes": {
+        "type": "object",
+        "properties": {
+          "list": {
+            "description": "권한 카탈로그 목록 (그룹 → 코드 정렬)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminPermissionItemRes"
+            }
+          }
+        },
+        "required": [
+          "list"
+        ]
+      },
+      "FailedRecipient": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "reason": {
+            "type": "string",
+            "description": "SES 호출 실패 사유"
+          }
+        },
+        "required": [
+          "email",
+          "reason"
+        ]
+      },
+      "AdminSendMailRes": {
+        "type": "object",
+        "properties": {
+          "successCount": {
+            "type": "integer",
+            "description": "발송 성공 건수"
+          },
+          "failedCount": {
+            "type": "integer",
+            "description": "발송 실패 건수"
+          },
+          "success": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "email"
+            },
+            "description": "발송 성공한 수신자 이메일"
+          },
+          "failed": {
+            "description": "발송 실패한 수신자와 사유",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FailedRecipient"
+            }
+          }
+        },
+        "required": [
+          "successCount",
+          "failedCount",
+          "success",
+          "failed"
+        ]
+      },
+      "AdminSendBulkRawReq": {
+        "type": "object",
+        "properties": {
+          "recipients": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "email"
+            },
+            "minItems": 1,
+            "maxItems": 100,
+            "description": "수신자 이메일 목록 (최대 100건)",
+            "example": [
+              "user1@example.com",
+              "user2@example.com"
+            ]
+          },
+          "subject": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "메일 제목"
+          },
+          "html": {
+            "type": "string",
+            "description": "메일 본문 HTML. admin 이 직접 작성하므로 sanitize 책임은 admin 에게 있음."
+          },
+          "lang": {
+            "type": "string",
+            "enum": [
+              "en-US",
+              "ko",
+              "fr",
+              "es",
+              "de",
+              "ja",
+              "ms"
+            ],
+            "default": "en-US",
+            "description": "발송 언어 코드. 미지정 시 en-US. (이 호출의 모든 수신자에게 동일 언어로 발송)"
+          }
+        },
+        "required": [
+          "recipients",
+          "subject",
+          "html"
+        ]
+      },
+      "AdminSendBulkTemplateReq": {
+        "type": "object",
+        "properties": {
+          "recipients": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "email"
+            },
+            "minItems": 1,
+            "maxItems": 100,
+            "description": "수신자 이메일 목록 (최대 100건)"
+          },
+          "templateId": {
+            "type": "string",
+            "enum": [
+              "announcement"
+            ],
+            "description": "템플릿 식별자",
+            "example": "announcement"
+          },
+          "vars": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "템플릿이 요구하는 변수 객체. templateId 별 필요 키:\n- `announcement`: { subject: string, bodyHtml: string }",
+            "example": {
+              "subject": "점검 안내",
+              "bodyHtml": "<p>3월 5일 02:00~04:00 시스템 점검 예정입니다.</p>"
+            }
+          },
+          "lang": {
+            "type": "string",
+            "enum": [
+              "en-US",
+              "ko",
+              "fr",
+              "es",
+              "de",
+              "ja",
+              "ms"
+            ],
+            "default": "en-US",
+            "description": "발송 언어 코드. 미지정 시 en-US. (이 호출의 모든 수신자에게 동일 언어로 발송)"
+          }
+        },
+        "required": [
+          "recipients",
+          "templateId",
+          "vars"
+        ]
+      },
+      "PushFailureReasonItem": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "description": "FCM 호출 실패 사유 (예: messaging/registration-token-not-registered)"
+          },
+          "count": {
+            "type": "integer",
+            "description": "해당 사유로 실패한 device 수"
+          }
+        },
+        "required": [
+          "reason",
+          "count"
+        ]
+      },
+      "AdminSendPushRes": {
+        "type": "object",
+        "properties": {
+          "successCount": {
+            "type": "integer",
+            "description": "발송 성공 device 수 (user 수가 아님)"
+          },
+          "failedCount": {
+            "type": "integer",
+            "description": "발송 실패 device 수"
+          },
+          "failureReasons": {
+            "description": "실패 사유별 device 수 grouping. push token 은 device 식별자라 응답에 노출하지 않고 reason 통계만 반환.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PushFailureReasonItem"
+            }
+          }
+        },
+        "required": [
+          "successCount",
+          "failedCount",
+          "failureReasons"
+        ]
+      },
+      "AdminSendBulkPushRawReq": {
+        "type": "object",
+        "properties": {
+          "userIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "minItems": 1,
+            "maxItems": 100,
+            "description": "발송 대상 user.id 목록 (최대 100명). 각 user 의 모든 device 에 동일 콘텐츠 발송.",
+            "example": [
+              1,
+              2,
+              3
+            ]
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "push 알림 제목"
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "push 알림 본문"
+          },
+          "dataPayload": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "FCM data payload (deeplink 등 클라이언트 라우팅 정보). 값은 모두 string 이어야 함 (FCM 규격). 예: { route: \"/notice/123\" }"
+          }
+        },
+        "required": [
+          "userIds",
+          "title",
+          "body"
+        ]
+      }
+    }
+  }
+}

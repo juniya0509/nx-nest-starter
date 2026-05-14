@@ -1,0 +1,166 @@
+name: Deploy app (reusable)
+
+# ────────────────────────────────────────────────────────────
+# 호출   : pipeline-develop.yml / pipeline-master.yml (workflow_call)
+# inputs : app (admin-api | core-api | batch)
+#          environment (development | production)
+#          health_port (3000 | 3001)
+# 동작   :
+#   1) (admin/core 만) i18n:download — locale 파일을 docker build context 에 포함
+#   2) Docker image build (루트 Dockerfile, APP_NAME build-arg, multi-stage)
+#   3) ECR login + push (tag = git SHA + latest)
+#   4) CodeDeploy bundle 생성 (docker-compose + appspec + execute.sh + .env + .codedeploy-env)
+#   5) aws deploy push → S3
+#   6) aws deploy create-deployment → CodeDeploy 트리거
+# 상세   : .claude/docs/CD.md
+# ────────────────────────────────────────────────────────────
+
+on:
+  workflow_call:
+    inputs:
+      app:
+        description: 'admin-api | core-api | batch'
+        required: true
+        type: string
+      environment:
+        description: 'development | production'
+        required: true
+        type: string
+      health_port:
+        description: '컨테이너 health check 포트 (host:container)'
+        required: true
+        type: number
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # admin-api / core-api 는 i18n locale 파일이 컨테이너에 들어있어야 부팅됨.
+      # ci job 의 download 결과는 별도 runner 라 deploy job 에서 접근 불가 — 여기서 다시 받아 docker build 컨텍스트에 포함시킨다.
+      - name: Setup (pnpm + node)
+        if: inputs.app != 'batch'
+        uses: ./.github/actions/setup
+
+      - name: Decode .env.<environment> (for i18n:download)
+        if: inputs.app != 'batch'
+        env:
+          ADMIN_ENV_BASE64: ${{ secrets.ADMIN_API_ENV_BASE64 }}
+          CORE_ENV_BASE64: ${{ secrets.CORE_API_ENV_BASE64 }}
+        run: |
+          case "${{ inputs.app }}" in
+            admin-api) echo "$ADMIN_ENV_BASE64" | base64 -d > apps/admin-api/.env.${{ inputs.environment }} ;;
+            core-api)  echo "$CORE_ENV_BASE64"  | base64 -d > apps/core-api/.env.${{ inputs.environment }} ;;
+          esac
+
+      - name: Download i18n translations (Lokalise)
+        if: inputs.app != 'batch'
+        env:
+          NODE_ENV: ${{ inputs.environment }}
+        run: |
+          case "${{ inputs.app }}" in
+            admin-api) pnpm admin i18n:download ;;
+            core-api)  pnpm core i18n:download ;;
+          esac
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Resolve image tag & repo
+        id: image
+        run: |
+          REPO="${{ steps.ecr.outputs.registry }}/${{ vars.RESOURCE_PREFIX }}-${{ inputs.app }}"
+          TAG="${{ github.sha }}"
+          echo "repo=$REPO" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "uri=$REPO:$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & push image to ECR
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          build-args: |
+            APP_NAME=${{ inputs.app }}
+          tags: |
+            ${{ steps.image.outputs.uri }}
+            ${{ steps.image.outputs.repo }}:latest
+          cache-from: type=gha,scope=${{ inputs.app }}-${{ inputs.environment }}
+          cache-to: type=gha,scope=${{ inputs.app }}-${{ inputs.environment }},mode=max
+
+      - name: Prepare CodeDeploy bundle
+        env:
+          ADMIN_ENV_BASE64: ${{ secrets.ADMIN_API_ENV_BASE64 }}
+          CORE_ENV_BASE64: ${{ secrets.CORE_API_ENV_BASE64 }}
+          BATCH_ENV_BASE64: ${{ secrets.BATCH_ENV_BASE64 }}
+        run: |
+          set -e
+          BUNDLE_DIR=deploy-bundle
+          rm -rf "$BUNDLE_DIR"
+          mkdir -p "$BUNDLE_DIR/scripts"
+
+          # 앱별 deploy 파일 복사 (docker-compose.yml / appspec.yml / scripts/execute.sh)
+          cp apps/${{ inputs.app }}/deploy/docker-compose.yml "$BUNDLE_DIR/docker-compose.yml"
+          cp apps/${{ inputs.app }}/deploy/appspec.yml "$BUNDLE_DIR/appspec.yml"
+          cp apps/${{ inputs.app }}/deploy/scripts/execute.sh "$BUNDLE_DIR/scripts/execute.sh"
+          chmod +x "$BUNDLE_DIR/scripts/execute.sh"
+
+          # .env.<environment> — env_file 로 컨테이너에 inject
+          case "${{ inputs.app }}" in
+            admin-api) echo "$ADMIN_ENV_BASE64" | base64 -d > "$BUNDLE_DIR/.env" ;;
+            core-api)  echo "$CORE_ENV_BASE64"  | base64 -d > "$BUNDLE_DIR/.env" ;;
+            batch)     echo "$BATCH_ENV_BASE64" | base64 -d > "$BUNDLE_DIR/.env" ;;
+          esac
+          chmod 600 "$BUNDLE_DIR/.env"
+
+          # execute.sh 가 source 할 변수 파일 (image tag, NODE_ENV, AWS region 등)
+          cat > "$BUNDLE_DIR/.codedeploy-env" <<EOF
+          export APP_NAME=${{ inputs.app }}
+          export NODE_ENV=${{ inputs.environment }}
+          export IMAGE_URI=${{ steps.image.outputs.uri }}
+          export ECR_REGISTRY=${{ steps.ecr.outputs.registry }}
+          export AWS_REGION=${{ vars.AWS_REGION }}
+          export HEALTH_PORT=${{ inputs.health_port }}
+          EOF
+          chmod 600 "$BUNDLE_DIR/.codedeploy-env"
+
+      - name: Upload bundle to S3 & trigger CodeDeploy
+        run: |
+          set -e
+          APP=${{ inputs.app }}
+          ENV=${{ inputs.environment }}
+          S3_KEY="${APP}-${ENV}-${{ github.sha }}.zip"
+          CD_APP="${{ vars.RESOURCE_PREFIX }}-${APP}-${ENV}"
+          CD_DG="${{ vars.RESOURCE_PREFIX }}-${APP}-dg-${ENV}"
+
+          aws deploy push \
+            --application-name "$CD_APP" \
+            --description "${APP} ${ENV} deploy ${{ github.sha }}" \
+            --s3-location "s3://${{ vars.S3_DEPLOY_BUCKET }}/${S3_KEY}" \
+            --source deploy-bundle
+
+          aws deploy create-deployment \
+            --application-name "$CD_APP" \
+            --deployment-group-name "$CD_DG" \
+            --s3-location "bucket=${{ vars.S3_DEPLOY_BUCKET }},key=${S3_KEY},bundleType=zip" \
+            --file-exists-behavior OVERWRITE \
+            --description "git SHA: ${{ github.sha }}"

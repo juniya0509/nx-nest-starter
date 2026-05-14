@@ -1,0 +1,31 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compileOnSave": false,
+  "files": [],
+  "references": [
+    {
+      "path": "./libs/core-enum"
+    },
+    {
+      "path": "./libs/core-contract"
+    },
+    {
+      "path": "./libs/core-database"
+    },
+    {
+      "path": "./libs/core-domain"
+    },
+    {
+      "path": "./apps/admin-api"
+    },
+    {
+      "path": "./apps/core-api"
+    },
+    {
+      "path": "./libs/core-util"
+    },
+    {
+      "path": "./apps/batch"
+    }
+  ]
+}

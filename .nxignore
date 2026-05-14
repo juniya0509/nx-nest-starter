@@ -1,0 +1,5 @@
+dist
+**/dist
+out-tsc
+**/out-tsc
+.nx

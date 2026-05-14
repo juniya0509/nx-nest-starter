@@ -1,0 +1,21 @@
+# ECR image 를 컨테이너로 실행.
+# batch 는 cron 이 본업이지만 ALB 없이 단일 인스턴스 health check 용 HTTP 서버를 띄움 (port 3001).
+# 변수(IMAGE_URI / NODE_ENV) 는 execute.sh 가 .codedeploy-env 에서 source 한 후 export 한 값을 사용한다.
+
+services:
+  batch:
+    image: ${IMAGE_URI}
+    container_name: batch
+    restart: always
+    env_file:
+      - ./.env
+    environment:
+      - TZ=Asia/Seoul
+      - NODE_ENV=${NODE_ENV}
+    ports:
+      - '3001:3001'
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '5'

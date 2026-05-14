@@ -1,0 +1,34 @@
+# 빌드 산출물
+/dist
+/tmp
+/out-tsc
+**/*.tsbuildinfo
+
+# 의존성
+/node_modules
+
+# Nx 캐시
+/.nx/cache
+/.nx/workspace-data
+
+# 테스트 및 커버리지
+/coverage
+/test-output
+
+# 패키지 매니저 락파일
+pnpm-lock.yaml
+
+# 에디터/AI 도구
+/.claude
+/.vscode
+
+# 시스템 파일
+.DS_Store
+
+# 환경변수
+.env
+.env.*
+!.env.example
+
+# 로그 파일
+*.log
